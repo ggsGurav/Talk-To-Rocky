@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Talk to Rocky — Alien Communication Puzzle</title>
+  <meta name="description"
+        content="A browser-based sci-fi communication puzzle inspired by Project Hail Mary. Decode and respond to Rocky's alien tone language." />
+
+  <!-- Favicon emoji fallback -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👾</text></svg>" />
+
+  <link rel="stylesheet" href="styles.css?v=4" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SCREEN: INTRO                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="screen-intro" class="screen active" role="main">
+  <div class="intro-container">
+
+    <!-- Logo -->
+    <div class="intro-logo" aria-hidden="true">👾</div>
+
+    <p class="intro-eyebrow">deep space communication protocol</p>
+    <h1 class="intro-title">Talk to Rocky</h1>
+    <p class="intro-tagline">A sci-fi first-contact puzzle experiment</p>
+
+    <!-- Story intro -->
+    <article class="intro-story">
+      You've been drifting in deep space for months. Then—a signal.<br /><br />
+      A spider-like creature clings to the hull of a ship made of rock. It has no mouth,
+      no eyes you can recognize. But it <em>speaks</em>—in tones, frequencies, and
+      patterns your instruments can barely capture.<br /><br />
+      Its name, as best you can translate: <strong>Rocky</strong>.<br /><br />
+      It wants to communicate. So do you. You have nothing in common—except mathematics
+      and the physics of sound. That might be enough.
+    </article>
+
+    <!-- Level select -->
+    <p class="level-select-title">Select Level</p>
+    <div id="level-select-grid" role="navigation" aria-label="Level selection"></div>
+
+    <!-- CTA -->
+    <button id="btn-start" class="btn-primary" aria-label="Begin the game">
+      ▶ BEGIN TRANSMISSION
+    </button>
+
+    <p class="dev-credit">developed by <span>Soham Gurav</span></p>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SCREEN: GAME                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="screen-game" class="screen" role="main">
+
+  <!-- ── Top Bar ── -->
+  <header class="topbar">
+    <span class="topbar-brand">◈ ROCKY COMM</span>
+    <span class="topbar-level" id="level-num">1 / 5</span>
+
+    <div class="topbar-right">
+      <!-- Translation Log toggle -->
+      <button id="btn-log-toggle" class="btn-icon" aria-controls="translation-log"
+              aria-expanded="false" title="Open Translation Log">
+        📖 Translation Log
+      </button>
+      <!-- Back to intro -->
+      <button id="btn-back" class="btn-icon" title="Return to level select">
+        ← Back
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main Layout ── -->
+  <div class="game-layout">
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!--  LEFT PANEL — Rocky's Alien Signal                          -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <aside class="panel panel-left" id="panel-alien" aria-label="Rocky's signal panel">
+
+      <!-- Panel header -->
+      <div class="panel-header">
+        <span class="panel-icon">📡</span>
+        <span class="panel-title">Rocky's Signal</span>
+      </div>
+
+      <!-- Level info card -->
+      <div class="level-card">
+        <h2 id="level-title">Level 1: First Contact</h2>
+        <p class="level-subtitle" id="level-subtitle">A single pulse from the void…</p>
+        <p class="level-desc"   id="level-desc">Loading…</p>
+        <p class="level-hint"   id="level-hint">Loading…</p>
+      </div>
+
+      <!-- Waveform visualization -->
+      <div class="waveform-wrap" aria-hidden="true">
+        <canvas id="alien-waveform"></canvas>
+        <span class="waveform-label">Signal Input</span>
+      </div>
+
+      <!-- Signal tone dots -->
+      <div class="signal-section">
+        <p class="section-label">Signal tones</p>
+        <div id="alien-signal-dots" aria-label="Rocky's signal tones" role="list"></div>
+      </div>
+
+      <!-- Play alien signal -->
+      <button id="btn-play-alien" class="btn-play-alien"
+              aria-label="Play Rocky's alien signal">
+        ▶ Play Rocky's Signal
+      </button>
+
+    </aside>
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!--  RIGHT PANEL — Player Response                              -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <section class="panel panel-right" id="panel-player" aria-label="Player response panel">
+
+      <!-- Panel header -->
+      <div class="panel-header">
+        <span class="panel-icon">🎛️</span>
+        <span class="panel-title violet">Your Transmitter</span>
+      </div>
+
+      <!-- Waveform (player output) -->
+      <div class="waveform-wrap" aria-hidden="true">
+        <canvas id="player-waveform"></canvas>
+        <span class="waveform-label">Signal Output</span>
+      </div>
+
+      <!-- Frequency buttons -->
+      <div class="freq-section">
+        <p class="section-label">Choose Frequency</p>
+        <div id="freq-buttons" role="group" aria-label="Frequency selector"></div>
+      </div>
+
+      <!-- Duration control -->
+      <div class="duration-row">
+        <label class="duration-label" for="duration-val">Duration:</label>
+        <input
+          type="range" id="duration-val"
+          min="0.2" max="1.2" step="0.1" value="0.5"
+          aria-label="Tone duration"
+          oninput="document.getElementById('duration-display').textContent = (+this.value).toFixed(1) + 's'"
+        />
+        <span id="duration-display">0.5s</span>
+      </div>
+
+      <!-- Built sequence display -->
+      <div class="tones-section">
+        <p class="section-label">Your Sequence <small style="opacity:.5;">(click tone to remove)</small></p>
+        <div id="tones-display" role="list" aria-label="Player's response tones"></div>
+      </div>
+
+      <!-- Response actions -->
+      <div class="response-actions">
+        <button id="btn-play-player" class="btn-action violet"
+                aria-label="Preview your response">
+          ▶ Preview
+        </button>
+        <button id="btn-clear-tones" class="btn-action red"
+                aria-label="Clear all tones">
+          ✕ Clear
+        </button>
+        <button id="btn-submit" class="btn-action green"
+                aria-label="Submit your response to Rocky">
+          ✓ Transmit
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!--  FEEDBACK PANEL (full width bottom)                         -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div id="feedback-panel" class="hidden" role="alert" aria-live="polite">
+
+      <div class="score-ring" id="score-ring">
+        <span id="feedback-score">—</span>
+      </div>
+
+      <div id="feedback-bars" aria-label="Tone accuracy bars"></div>
+
+      <p id="feedback-msg" class="feedback-text">—</p>
+
+      <div class="feedback-actions">
+        <button id="btn-retry" class="btn-action red">↺ Retry</button>
+        <button id="btn-next"  class="btn-action gold" style="display:none;">
+          Next Level →
+        </button>
+      </div>
+
+    </div>
+
+  </div><!-- /.game-layout -->
+
+  <!-- Story strip -->
+  <footer class="story-strip">
+    <span id="story-text">// Awaiting transmission…</span>
+    <span class="dev-credit-game">developed by Soham Gurav</span>
+  </footer>
+
+</section><!-- /#screen-game -->
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  TRANSLATION LOG (slide-in panel)                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<aside id="translation-log" role="complementary" aria-label="Translation log">
+  <h3>📓 Rocky's Dictionary</h3>
+  <div id="log-entries"></div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  GAME COMPLETE OVERLAY                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="overlay-complete" role="dialog" aria-label="Game complete">
+  <div class="complete-icon">🌌</div>
+  <h2 class="complete-title">First Contact Achieved</h2>
+  <p class="complete-msg">
+    You did it. Against all odds, across the void of space, two species built a bridge
+    from mathematics alone. Rocky understands you. You understand Rocky.<br /><br />
+    <em>The universe is a little less lonely tonight.</em>
+  </p>
+  <button class="btn-restart" onclick="location.reload()">
+    ← Return to Mission Select
+  </button>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ── Scripts (order matters) ── -->
+<script src="levels.js?v=5"></script>
+<script src="audio.js?v=5"></script>
+<script src="script.js?v=5"></script>
+
+</body>
+</html>
